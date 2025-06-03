@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company SPIFF Jeopardy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #060CE9;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            letter-spacing: 3px;
+        }
+
+        /* Score Tracker Styles */
+        .score-section {
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+            background-color: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid gold;
+        }
+
+        .player-setup {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .player-setup input {
+            padding: 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        .player-setup button {
+            background-color: gold;
+            color: #060CE9;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .player-setup button:hover {
+            background-color: #FFD700;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .player-score {
+            background-color: rgba(0,0,0,0.5);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 2px solid gold;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .player-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: gold;
+            margin-bottom: 5px;
+        }
+
+        .player-points {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Game Board Styles */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            max-width: 1200px;
+            width: 100%;
+            background-color: black;
+            padding: 5px;
+            border: 3px solid gold;
+        }
+
+        .category {
+            background-color: #060CE9;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid gold;
+        }
+
+        .cell {
+            background-color: #060CE9;
+            border: 2px solid gold;
+            padding: 30px;
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .cell:hover {
+            background-color: #0820FF;
+            transform: scale(1.05);
+        }
+
+        .cell.revealed {
+            background-color: #1a1a1a;
+            cursor: default;
+            transform: scale(1);
+            font-size: 18px;
+            padding: 10px;
+        }
+
+        .cell.revealed:hover {
+            background-color: #1a1a1a;
+        }
+
+        .dollar-amount {
+            color: gold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .winner-name {
+            color: #90EE90;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        /* Modal Styles */
+        .question-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .question-content {
+            background-color: #060CE9;
+            padding: 40px;
+            border: 3px solid gold;
+            border-radius: 10px;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+        }
+
+        .question-text {
+            font-size: 28px;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .answer {
+            font-size: 24px;
+            color: gold;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .player-buttons {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .player-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .player-btn:hover {
+            background-color: #45a049;
+        }
+
+        .button-group {
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: gold;
+            color: #060CE9;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: #FFD700;
+            transform: scale(1.05);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 5px 15px;
+            margin: 0;
+        }
+
+        .close-btn:hover {
+            background-color: white;
+            color: #060CE9;
+        }
+
+        /* Edit Mode Styles */
+        .edit-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #FF6B6B;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+
+        .edit-btn:hover {
+            background-color: #FF5252;
+        }
+
+        @media (max-width: 768px) {
+            .category {
+                font-size: 16px;
+                padding: 10px;
+                min-height: 60px;
+            }
+            
+            .cell {
+                font-size: 24px;
+                padding: 20px;
+                min-height: 60px;
+            }
+            
+            .question-text {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>COMPANY SPIFF JEOPARDY!</h1>
+    
+    <!-- Score Section -->
+    <div class="score-section">
+        <div class="player-setup">
+            <input type="text" id="playerNameInput" placeholder="Enter agent name">
+            <button onclick="addPlayer()">Add Agent</button>
+        </div>
+        <div class="scores" id="scoresContainer"></div>
+    </div>
+    
+    <div class="game-board">
+        <!-- Categories -->
+        <div class="category">Sports</div>
+        <div class="category">Current Events</div>
+        <div class="category">History</div>
+        <div class="category">Spelling</div>
+        <div class="category">Music</div>
+        
+        <!-- All cells will be generated by JavaScript -->
+    </div>
+
+    <!-- Question Modal -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div class="question-text" id="questionText"></div>
+            <div class="answer" id="answerText"></div>
+            <div class="player-buttons" id="playerButtons"></div>
+            <div class="button-group">
+                <button onclick="showAnswer()">Show Answer</button>
+                <button onclick="closeModal()">Back to Board</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Button -->
+    <button class="edit-btn" onclick="toggleEditMode()">Edit Questions</button>
+
+    <script>
+        // EDIT QUESTIONS HERE - Simply modify the text between the quotes
+        const questions = {
+            "Sports": {
+                "$2": [
+                    {
+                        question: "Which NBA franchise has won the most championships?",
+                        answer: "What are the Celtics?"
+                    },
+                    {
+                        question: "The NHL championship trophy is called.",
+                        answer: "What is the Stanley Cup?"
+                    }
+                ],
+                "$3": [
+                    {
+                        question: "This swimmer won 23 Olympic gold medals, the most in history.",
+                        answer: "Who is Michael Phelps?"
+                    },
+                    {
+                        question: "This MLB team broke their 108-year championship drought in 2016.",
+                        answer: "What are the Chicago Cubs?"
+                    }
+                ],
+                "$4": [
+                    {
+                        question: "Who is the MLB's all time leader in strikeouts?",
+                        answer: "Who is Nolan Ryan?"
+                    },
+                    {
+                        question: "Who won the NFL's 2024 MVP award?",
+                        answer: "Josh Allen"
+                    }
+                ],
+                "$5": [
+                    {
+                        question: "This NFL team is the only one to complete a perfect season, going 17-0 in 1972.",
+                        answer: "What are the Miami Dolphins?"
+                    },
+                    {
+                        question: "The MLB's modern era record for most home runs in a season is 73, set by this player in 2001.",
+                        answer: "Who is Barry Bonds?"
+                    }
+                ],
+                "$8": [
+                    {
+                        question: "How many NBA Finals appearances does Lebron James have?",
+                        answer: "What is 10?"
+                    },
+                    {
+                        question: "This iconic duo of sluggers that played for the Oakland Athletics in the late 80's and 90's were known as?",
+                        answer: "Who are the Bash Brothers?"
+                    }
+                ]
+            },
+            "Current Events": {
+                "$2": [
+                    {
+                        question: "Which venue is Metallica performing in this weekend?",
+                        answer: "What is Raymond James Stadium?"
+                    },
+                    {
+                        question: "Who is the current British Monarch?",
+                        answer: "Who is King Charles III?"
+                    }
+                ],
+                "$3": [
+                    {
+                        question: "This company became the first to reach a $3 trillion market valuation in 2023.",
+                        answer: "What is Apple?"
+                    },
+                    {
+                        question: "The 2024 Summer Olympics were held in this European capital city.",
+                        answer: "What is Paris?"
+                    }
+                ],
+                "$4": [
+                    {
+                        question: "This spacecraft successfully landed NASA's first samples from an asteroid in September 2023.",
+                        answer: "What is OSIRIS-REx?"
+                    },
+                    {
+                        question: "This streaming service launched a successful ad-supported tier in 2022 after years of resistance.",
+                        answer: "What is Netflix?"
+                    }
+                ],
+                "$5": [
+                    {
+                        question: "This country became NATO's 31st member in April 2023.",
+                        answer: "What is Finland?"
+                    },
+                    {
+                        question: "The Federal Reserve raised interest rates to this range in 2023, the highest in over 20 years.",
+                        answer: "What is 5.25-5.50%?"
+                    }
+                ],
+                "$8": [
+                    {
+                        question: "This AI chatbot, is a family of large language models developed by Anthropic. The first model was released in March 2023.",
+                        answer: "What is Claude?"
+                    },
+                    {
+                        question: "The Hollywood writers' and actors' strikes in 2023 lasted this combined number of days.",
+                        answer: "What is 269 days? (148 for writers + 121 for actors)"
+                    }
+                ]
+            },
+            "History": {
+                "$2": [
+                    {
+                        question: "This ship famously sank on its maiden voyage in 1912.",
+                        answer: "What is the Titanic?"
+                    },
+                    {
+                        question: "The American Revolutionary War ended in this year.",
+                        answer: "What is 1783?"
+                    }
+                ],
+                "$3": [
+                    {
+                        question: "This ancient wonder of the world still stands in Egypt.",
+                        answer: "What are the Great Pyramids of Giza?"
+                    },
+                    {
+                        question: "The first human to walk on the moon did so in this year.",
+                        answer: "What is 1969?"
+                    }
+                ],
+                "$4": [
+                    {
+                        question: "This empire, led by Genghis Khan, became the largest contiguous land empire in history.",
+                        answer: "What is the Mongol Empire?"
+                    },
+                    {
+                        question: "The Berlin Wall fell in this year, marking the symbolic end of the Cold War.",
+                        answer: "What is 1989?"
+                    }
+                ],
+                "$5": [
+                    {
+                        question: "This treaty ended World War I and imposed harsh penalties on Germany.",
+                        answer: "What is the Treaty of Versailles?"
+                    },
+                    {
+                        question: "What was the name of the first atomic bomb that was dropped?",
+                        answer: "What is Little Boy?"
+                    }
+                ],
+                "$8": [
+                    {
+                        question: "The P-51 was one of the most famous propeller fighter aircraft of all time and shared it's name with a car, what was it known as?",
+                        answer: "What is Mustang?"
+                    },
+                    {
+                        question: "The Magna Carta was signed in this year, limiting the power of English monarchs.",
+                        answer: "What is 1215?"
+                    }
+                ]
+            },
+            "Spelling": {
+                "$2": [
+                    {
+                        question: "Spell the word for a place where books are kept and borrowed.",
+                        answer: "What is L-I-B-R-A-R-Y?"
+                    },
+                    {
+                        question: "Spell the word for the second month of the year.",
+                        answer: "What is F-E-B-R-U-A-R-Y?"
+                    }
+                ],
+                "$3": [
+                    {
+                        question: "Spell the word for a person who performs magic tricks.",
+                        answer: "What is M-A-G-I-C-I-A-N?"
+                    },
+                    {
+                        question: "Spell the word meaning 'needed or required.'",
+                        answer: "What is N-E-C-E-S-S-A-R-Y?"
+                    }
+                ],
+                "$4": [
+                    {
+                        question: "Spell the word for a government by the people.",
+                        answer: "What is D-E-M-O-C-R-A-C-Y?"
+                    },
+                    {
+                        question: "Spell the word meaning 'to receive or to be given something.'",
+                        answer: "What is R-E-C-E-I-V-E?"
+                    }
+                ],
+                "$5": [
+                    {
+                        question: "Spell the word for the study of the mind and behavior.",
+                        answer: "What is P-S-Y-C-H-O-L-O-G-Y?"
+                    },
+                    {
+                        question: "Spell the word meaning 'occurring at the same time.'",
+                        answer: "What is S-I-M-U-L-T-A-N-E-O-U-S?"
+                    }
+                ],
+                "$8": [
+                    {
+                        question: "Spell the word for a person who starts a business.",
+                        answer: "What is E-N-T-R-E-P-R-E-N-E-U-R?"
+                    },
+                    {
+                        question: "Spell the word meaning 'impossible to understand.'",
+                        answer: "What is I-N-C-O-M-P-R-E-H-E-N-S-I-B-L-E?"
+                    }
+                ]
+            },
+            "Music": {
+                "$2": [
+                    {
+                        question: "This 'King of Pop' sang 'Thriller' and 'Billie Jean.'",
+                        answer: "Who is Michael Jackson?"
+                    },
+                    {
+                        question: "This instrument has 88 keys, both black and white.",
+                        answer: "What is a piano?"
+                    }
+                ],
+                "$3": [
+                    {
+                        question: "This British band sang 'Bohemian Rhapsody' and was fronted by Freddie Mercury.",
+                        answer: "What is Queen?"
+                    },
+                    {
+                        question: "Taylor Swift's 2023 concert tour shares its name with this word meaning 'different periods of time.'",
+                        answer: "What is Eras?"
+                    }
+                ],
+                "$4": [
+                    {
+                        question: "This classical composer wrote his 9th Symphony while completely deaf.",
+                        answer: "Who is Ludwig van Beethoven?"
+                    },
+                    {
+                        question: "The Beatles were from this English city.",
+                        answer: "What is Liverpool?"
+                    }
+                ],
+                "$5": [
+                    {
+                        question: "This jazz musician was known as 'Satchmo' and sang 'What a Wonderful World.'",
+                        answer: "Who is Louis Armstrong?"
+                    },
+                    {
+                        question: "This music streaming service, founded in Sweden, went public in 2018.",
+                        answer: "What is Spotify?"
+                    }
+                ],
+                "$8": [
+                    {
+                        question: "This opera by Puccini tells the tragic story of a Japanese geisha.",
+                        answer: "What is Madame Butterfly?"
+                    },
+                    {
+                        question: "The standard tuning frequency for the A above middle C is this many Hertz.",
+                        answer: "What is 440?"
+                    }
+                ]
+            }
+        };
+
+        // Game state
+        let players = {};
+        let currentCell = null;
+        let currentValue = 0;
+        let editMode = false;
+
+        // Initialize the game board
+        function initializeBoard() {
+            const gameBoard = document.querySelector('.game-board');
+            const categories = Object.keys(questions);
+            
+            // Clear existing cells (keep categories)
+            const existingCells = gameBoard.querySelectorAll('.cell');
+            existingCells.forEach(cell => cell.remove());
+            
+            // Add cells for each category and value
+            ['$2', '$3', '$4', '$5', '$8'].forEach(value => {
+                // Two rows for each value (2 questions per value)
+                for (let questionIndex = 0; questionIndex < 2; questionIndex++) {
+                    categories.forEach(category => {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.setAttribute('data-category', category);
+                        cell.setAttribute('data-value', value.substring(1));
+                        cell.setAttribute('data-question-index', questionIndex);
+                        cell.innerHTML = `<span class="dollar-amount">${value}</span>`;
+                        
+                        cell.addEventListener('click', function() {
+                            if (!this.classList.contains('revealed') && !editMode) {
+                                handleCellClick(this);
+                            }
+                        });
+                        
+                        gameBoard.appendChild(cell);
+                    });
+                }
+            });
+        }
+
+        // Handle cell click
+        function handleCellClick(cell) {
+            currentCell = cell;
+            const category = cell.getAttribute('data-category');
+            const value = '$' + cell.getAttribute('data-value');
+            const questionIndex = parseInt(cell.getAttribute('data-question-index'));
+            currentValue = parseInt(cell.getAttribute('data-value'));
+            
+            const questionData = questions[category][value][questionIndex];
+            
+            document.getElementById('questionText').textContent = questionData.question;
+            document.getElementById('answerText').textContent = questionData.answer;
+            document.getElementById('answerText').style.display = 'none';
+            
+            updatePlayerButtons();
+            document.getElementById('questionModal').style.display = 'flex';
+        }
+
+        // Add player
+        function addPlayer() {
+            const input = document.getElementById('playerNameInput');
+            const name = input.value.trim();
+            
+            if (name && !players[name]) {
+                players[name] = 0;
+                updateScoreboard();
+                input.value = '';
+            }
+        }
+
+        // Update scoreboard
+        function updateScoreboard() {
+            const container = document.getElementById('scoresContainer');
+            container.innerHTML = '';
+            
+            Object.entries(players).forEach(([name, score]) => {
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'player-score';
+                scoreDiv.innerHTML = `
+                    <div class="player-name">${name}</div>
+                    <div class="player-points">$${score}</div>
+                `;
+                container.appendChild(scoreDiv);
+            });
+        }
+
+        // Update player buttons in modal
+        function updatePlayerButtons() {
+            const container = document.getElementById('playerButtons');
+            container.innerHTML = '';
+            
+            if (Object.keys(players).length > 0) {
+                container.style.display = 'flex';
+                
+                Object.keys(players).forEach(name => {
+                    const btn = document.createElement('button');
+                    btn.className = 'player-btn';
+                    btn.textContent = name + ' got it!';
+                    btn.onclick = () => awardPoints(name);
+                    container.appendChild(btn);
+                });
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        // Award points to player
+        function awardPoints(playerName) {
+            players[playerName] += currentValue;
+            updateScoreboard();
+            
+            // Update the cell to show winner
+            if (currentCell) {
+                currentCell.classList.add('revealed');
+                currentCell.innerHTML = `
+                    <div class="winner-name">${playerName}</div>
+                    <div class="dollar-amount">$${currentValue}</div>
+                `;
+            }
+            
+            closeModal();
+        }
+
+        // Show answer
+        function showAnswer() {
+            document.getElementById('answerText').style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('questionModal').style.display = 'none';
+            
+            // If no player was selected, just gray out the cell
+            if (currentCell && !currentCell.classList.contains('revealed')) {
+                currentCell.classList.add('revealed');
+                currentCell.innerHTML = '';
+            }
+        }
+
+        // Toggle edit mode
+        function toggleEditMode() {
+            editMode = !editMode;
+            const editBtn = document.querySelector('.edit-btn');
+            
+            if (editMode) {
+                editBtn.textContent = 'Done Editing';
+                editBtn.style.backgroundColor = '#4CAF50';
+                alert('Edit mode enabled! You can now edit questions directly in the code. Click "Done Editing" when finished.');
+            } else {
+                editBtn.textContent = 'Edit Questions';
+                editBtn.style.backgroundColor = '#FF6B6B';
+                initializeBoard(); // Refresh the board with any changes
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('questionModal');
+            if (modal.style.display === 'flex') {
+                if (e.key === 'Escape') {
+                    closeModal();
+                } else if (e.key === ' ' || e.key === 'Enter') {
+                    const answerText = document.getElementById('answerText');
+                    if (answerText.style.display === 'none') {
+                        showAnswer();
+                    }
+                }
+            }
+        });
+
+        // Allow Enter key to add player
+        document.getElementById('playerNameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPlayer();
+            }
+        });
+
+        // Initialize the board when page loads
+        initializeBoard();
+    </script>
+</body>
+</html>
